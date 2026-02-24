@@ -4,30 +4,21 @@ import mongoose from 'mongoose'
 
 const connectDB = async () => {
     try {
+        if (!process.env.MONGODB_URI) {
+            throw new Error('MONGODB_URI is not defined in environment variables');
+        }
+
         const conn = await mongoose.connect(process.env.MONGODB_URI, {
-            // Mongoose 8 defaults are good, but we set these explicitly for clarity
-            maxPoolSize: 10,
-            serverSelectionTimeoutMS: 5000,
+            serverSelectionTimeoutMS: 10000, // Wait up to 10s for connection
             socketTimeoutMS: 45000,
-        })
+        });
 
-        console.log(`✅ MongoDB connected: ${conn.connection.host}`)
-
-        // Handle connection events
-        mongoose.connection.on('error', (err) => {
-            console.error('❌ MongoDB connection error:', err)
-        })
-
-        mongoose.connection.on('disconnected', () => {
-            console.warn('⚠️  MongoDB disconnected. Attempting reconnection...')
-        })
-
-        return conn
+        console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+        return conn;
     } catch (error) {
-        console.error('❌ MongoDB connection failed:', error.message)
-        console.warn('⚠️  Server will start without database — some features will be unavailable')
-        return null
+        console.error('❌ MongoDB connection failed:', error.message);
+        throw error; // Rethrow to prevent app from starting in broken state
     }
-}
+};
 
 export default connectDB
