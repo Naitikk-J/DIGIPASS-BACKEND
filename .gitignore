@@ -3,3 +3,8 @@ node_modules/
 *.sqlite
 dist/
 coverage/
+.env
+.env.*
+!.env.example
+!.env.sample
+.vercel
